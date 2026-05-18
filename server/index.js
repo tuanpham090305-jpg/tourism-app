@@ -118,5 +118,5 @@ io.on("connection", () => {
 });
 
 server.listen(4000, () => {
-  console.log("Backend chạy tại http://localhost:4000");
+  console.log("https://tourism-app-production-bc95.up.railway.app");
 });
