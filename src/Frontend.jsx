@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { API_URL } from "./config";
 
 const formatVnd = (value) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
@@ -16,13 +17,10 @@ export default function Frontend({ foods, services, allItems, orders, setOrders,
   const [customer, setCustomer] = useState({ name: "", phone: "", note: "" });
 const [qr, setQr] = useState("");
   useEffect(() => {
-    fetch("http://localhost:4000/api/track", {
-     method: "POST",
-    });
-    fetch("http://localhost:4000/api/qr?url=https://tourism-app-eta.vercel.app")
+  fetch(`${API_URL}/api/qr?url=https://tourism-app-eta.vercel.app`)
     .then((res) => res.json())
     .then((data) => setQr(data.qr));
-  }, []);
+}, []);
   const cartItems = Object.entries(cart)
     .map(([id, quantity]) => ({ ...allItems.find((item) => item.id === id), quantity }))
     .filter((item) => item.id && item.quantity > 0);
@@ -40,7 +38,7 @@ const [qr, setQr] = useState("");
   }
 
   try {
-    const res = await fetch("http://localhost:4000/api/orders", {
+    const res = await fetch(`${API_URL}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +72,11 @@ const [qr, setQr] = useState("");
             <p>Khách quét QR sẽ vào giao diện này. Khi đặt đơn, backend nhận thông báo ngay.</p>
           </div>
           <div className="qr">
-  {qr ? <img src={qr} alt="QR Code" className="qr-img" /> : "Loading..."}
+  {qr ? (
+    <img src={qr} alt="QR Code" className="qr-img" />
+  ) : (
+    "Loading..."
+  )}
 </div>
         </div>
 

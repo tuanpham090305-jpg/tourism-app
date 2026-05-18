@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { io } from "socket.io-client";
-import { useEffect } from "react";
+import { API_URL } from "./config";
 
 const formatVnd = (value) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
 
 export default function Backend({
   foods,
@@ -15,34 +18,35 @@ export default function Backend({
   siteInfo,
   setSiteInfo,
 }) {
-    useEffect(() => {
-  fetch("http://localhost:4000/api/orders")
-    .then((res) => res.json())
-    .then((data) => {
-      const formatted = data.map((o) => ({
-        id: o.id,
-        customer: {
-          name: o.customer_name,
-          phone: o.phone,
-          note: o.note,
-        },
-        items: JSON.parse(o.items),
-        total: o.total,
-        status: o.status,
-      }));
+  useEffect(() => {
+    fetch(`${API_URL}/api/orders`)
+      .then((res) => res.json())
+      .then((data) => {
+        const formatted = data.map((o) => ({
+          id: o.id,
+          customer: {
+            name: o.customer_name,
+            phone: o.phone,
+            note: o.note,
+          },
+          items: JSON.parse(o.items || "[]"),
+          total: o.total,
+          status: o.status,
+          time: o.created_at,
+        }));
 
-      setOrders(formatted);
+        setOrders(formatted);
+      });
+
+    const socket = io(API_URL);
+
+    socket.on("newOrder", (order) => {
+      setOrders((prev) => [order, ...prev]);
+      alert("Có đơn mới!");
     });
 
-  const socket = io("http://localhost:4000");
-
-  socket.on("newOrder", (order) => {
-    setOrders((prev) => [order, ...prev]);
-    alert("Có đơn mới!");
-  });
-
-  return () => socket.disconnect();
-}, []);
+    return () => socket.disconnect();
+  }, [setOrders]);
   const updateOrderStatus = (id, status) => {
     setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status } : order)));
   };
