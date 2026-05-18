@@ -91,6 +91,28 @@ export default function Frontend({
   return (
     <main className="layout">
       <section>
+      <div className="front-menu top-menu">
+  <button
+    className={activeMenu === "food" ? "active" : ""}
+    onClick={() => setActiveMenu("food")}
+  >
+    Menu ăn uống
+  </button>
+
+  <button
+    className={activeMenu === "service" ? "active" : ""}
+    onClick={() => setActiveMenu("service")}
+  >
+    Dịch vụ thuê đồ
+  </button>
+
+  <button
+    className={activeMenu === "audio" ? "active" : ""}
+    onClick={() => setActiveMenu("audio")}
+  >
+    Audio giới thiệu
+  </button>
+</div>
         <div className="hero">
           <div>
             <span className="tag">QR Frontend</span>
