@@ -2,10 +2,9 @@ import React, { useMemo, useState } from "react";
 import "./App.css";
 import Frontend from "./Frontend.jsx";
 import Backend from "./Backend.jsx";
-import AuthPage from "./AuthPage.jsx";
-import LoginPage from "./LoginPage.jsx";
-import RegisterPage from "./RegisterPage.jsx";
+import AdminLogin from "./AdminLogin.jsx";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 const initialFoods = [
   { id: "f1", name: "Bún hải sản", price: 65000, category: "Món ăn", stock: 35 },
   { id: "f2", name: "Cơm gà", price: 55000, category: "Món ăn", stock: 28 },
@@ -20,15 +19,9 @@ const initialServices = [
 ];
 
 export default function App() {
-  const [page, setPage] = useState("frontend");
   const [foods, setFoods] = useState(initialFoods);
   const [services, setServices] = useState(initialServices);
   const [orders, setOrders] = useState([]);
-  const [authMode, setAuthMode] = useState("login");
-  const [currentUser, setCurrentUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [clickCount, setClickCount] = useState(0);
-  const [authPage, setAuthPage] = useState("login");
 
   const [siteInfo, setSiteInfo] = useState({
     name: "Khu du lịch Sông Xanh",
@@ -43,61 +36,47 @@ export default function App() {
     ],
     [foods, services]
   );
-  const handleRegister = (user) => {
-  setUsers([...users, user]);
-  setCurrentUser(user);
-};
-
-const handleLogin = (phone, password) => {
-  const found = users.find(
-    (u) => u.phone === phone && u.password === password
-  );
-
-  if (found) {
-    setCurrentUser(found);
-  } else {
-    alert("Sai số điện thoại hoặc mật khẩu!");
-  }
-};
 
   return (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <Frontend
-          foods={foods}
-          services={services}
-          allItems={allItems}
-          orders={orders}
-          setOrders={setOrders}
-          setFoods={setFoods}
-          setServices={setServices}
-        />
-      }
-    />
-
-    <Route
-  path="/admin"
-  element={
-    localStorage.getItem("admin-auth") === "true" ? (
-      <Backend
-        foods={foods}
-        services={services}
-        orders={orders}
-        setOrders={setOrders}
-        setFoods={setFoods}
-        setServices={setServices}
-        siteInfo={siteInfo}
-        setSiteInfo={setSiteInfo}
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Frontend
+            foods={foods}
+            services={services}
+            allItems={allItems}
+            orders={orders}
+            setOrders={setOrders}
+            setFoods={setFoods}
+            setServices={setServices}
+          />
+        }
       />
-    ) : (
-      <Navigate to="/admin-login" />
-    )
-  }
-/>
-    <Route path="/admin-login" element={<AdminLogin />} />
-    <Route path="*" element={<Navigate to="/" />} />
-  </Routes>
-);
+
+      <Route path="/admin-login" element={<AdminLogin />} />
+
+      <Route
+        path="/admin"
+        element={
+          localStorage.getItem("admin-auth") === "true" ? (
+            <Backend
+              foods={foods}
+              services={services}
+              orders={orders}
+              setOrders={setOrders}
+              setFoods={setFoods}
+              setServices={setServices}
+              siteInfo={siteInfo}
+              setSiteInfo={setSiteInfo}
+            />
+          ) : (
+            <Navigate to="/admin-login" replace />
+          )
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
