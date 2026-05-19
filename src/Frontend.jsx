@@ -132,29 +132,6 @@ export default function Frontend({
           </div>
         </div>
 
-        <div className="front-menu">
-          <button
-            className={activeMenu === "food" ? "active" : ""}
-            onClick={() => setActiveMenu("food")}
-          >
-            Menu ăn uống
-          </button>
-
-          <button
-            className={activeMenu === "service" ? "active" : ""}
-            onClick={() => setActiveMenu("service")}
-          >
-            Dịch vụ thuê đồ
-          </button>
-
-          <button
-            className={activeMenu === "audio" ? "active" : ""}
-            onClick={() => setActiveMenu("audio")}
-          >
-            Audio giới thiệu
-          </button>
-        </div>
-
         {activeMenu === "food" && (
           <>
             <h2>Menu các quán ăn uống</h2>
