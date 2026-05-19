@@ -6,30 +6,34 @@ export default function AdminLogin() {
   const navigate = useNavigate();
 
   const login = () => {
-    if (password === "admin123") {
+    if (password.trim() === "admin123") {
       localStorage.setItem("admin-auth", "true");
       navigate("/admin");
     } else {
-      alert("Sai mật khẩu!");
+      alert("Sai mật khẩu admin!");
     }
   };
 
   return (
-    <div className="login-page">
+    <main className="login-page">
       <div className="login-card">
         <h1>Admin Login</h1>
+        <p>Nhập mật khẩu để vào trang quản trị.</p>
 
         <input
           type="password"
-          placeholder="Nhập mật khẩu admin"
+          placeholder="Mật khẩu admin"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") login();
+          }}
         />
 
         <button className="primary" onClick={login}>
           Đăng nhập Admin
         </button>
       </div>
-    </div>
+    </main>
   );
 }
