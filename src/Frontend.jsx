@@ -117,10 +117,7 @@ export default function Frontend({
           <div>
             <span className="tag">QR Frontend</span>
             <h2>Đặt món, thuê dịch vụ, nghe audio du lịch</h2>
-            <p>
-              Khách quét QR sẽ vào giao diện này. Khi đặt đơn, backend nhận
-              thông báo realtime.
-            </p>
+            
           </div>
 
           <div className="qr">
