@@ -17,19 +17,20 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: allowedOrigins,
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
 
+app.use(express.json());
+
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   },
 });
-app.use(express.json());
 
 const db = new sqlite3.Database("./tourism.db");
 
@@ -57,16 +58,35 @@ db.serialize(() => {
   `);
 });
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Tourism backend is running",
+    status: "OK",
+  });
+});
+
 app.post("/api/track", (req, res) => {
   db.run(
     "INSERT INTO visitors (ip, user_agent) VALUES (?, ?)",
-    [req.ip, req.headers["user-agent"]],
-    () => res.json({ success: true })
+    [req.ip, req.headers["user-agent"] || ""],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Không lưu được lượt truy cập" });
+      }
+
+      res.json({ success: true });
+    }
   );
 });
 
 app.post("/api/orders", (req, res) => {
   const { customer, items, total } = req.body;
+
+  if (!customer || !customer.name || !customer.phone || !items?.length) {
+    return res.status(400).json({
+      error: "Thiếu thông tin khách hàng hoặc đơn hàng",
+    });
+  }
 
   db.run(
     `INSERT INTO orders (customer_name, phone, note, items, total, status)
@@ -74,18 +94,23 @@ app.post("/api/orders", (req, res) => {
     [
       customer.name,
       customer.phone,
-      customer.note,
+      customer.note || "",
       JSON.stringify(items),
-      total,
+      total || 0,
       "Mới",
     ],
-    function () {
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: "Không tạo được đơn hàng" });
+      }
+
       const order = {
         id: this.lastID,
         customer,
         items,
         total,
         status: "Mới",
+        time: new Date().toISOString(),
       };
 
       io.emit("newOrder", order);
@@ -96,6 +121,10 @@ app.post("/api/orders", (req, res) => {
 
 app.get("/api/orders", (req, res) => {
   db.all("SELECT * FROM orders ORDER BY id DESC", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: "Không lấy được danh sách đơn" });
+    }
+
     res.json(rows);
   });
 });
@@ -103,10 +132,18 @@ app.get("/api/orders", (req, res) => {
 app.patch("/api/orders/:id", (req, res) => {
   const { status } = req.body;
 
+  if (!status) {
+    return res.status(400).json({ error: "Thiếu trạng thái đơn hàng" });
+  }
+
   db.run(
     "UPDATE orders SET status = ? WHERE id = ?",
     [status, req.params.id],
-    () => {
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: "Không cập nhật được đơn" });
+      }
+
       io.emit("orderUpdated", {
         id: req.params.id,
         status,
@@ -119,20 +156,30 @@ app.patch("/api/orders/:id", (req, res) => {
 
 app.get("/api/visitors", (req, res) => {
   db.all("SELECT * FROM visitors ORDER BY id DESC", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: "Không lấy được lượt truy cập" });
+    }
+
     res.json(rows);
   });
 });
 
 app.get("/api/qr", async (req, res) => {
-  const url = req.query.url || "http://localhost:5173";
-  const qr = await QRCode.toDataURL(url);
-  res.json({ qr });
+  try {
+    const url = req.query.url || "https://tourism-app-khzp.vercel.app";
+    const qr = await QRCode.toDataURL(url);
+    res.json({ qr });
+  } catch (err) {
+    res.status(500).json({ error: "Không tạo được QR" });
+  }
 });
 
 io.on("connection", () => {
   console.log("Admin connected realtime");
 });
 
-server.listen(4000, () => {
-  console.log("https://tourism-app-production-bc95.up.railway.app");
+const PORT = process.env.PORT || 4000;
+
+server.listen(PORT, () => {
+  console.log(`Backend chạy tại port ${PORT}`);
 });
