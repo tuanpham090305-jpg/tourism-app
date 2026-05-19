@@ -5,6 +5,7 @@ import Backend from "./Backend.jsx";
 import AuthPage from "./AuthPage.jsx";
 import LoginPage from "./LoginPage.jsx";
 import RegisterPage from "./RegisterPage.jsx";
+import { Routes, Route, Navigate } from "react-router-dom";
 const initialFoods = [
   { id: "f1", name: "Bún hải sản", price: 65000, category: "Món ăn", stock: 35 },
   { id: "f2", name: "Cơm gà", price: 55000, category: "Món ăn", stock: 28 },
@@ -60,47 +61,10 @@ const handleLogin = (phone, password) => {
 };
 
   return (
-    <div className="app">
-      <header className="header">
-        <div>
-          <h1
-  onClick={() => {
-    const newCount = clickCount + 1;
-    setClickCount(newCount);
-
-    if (newCount === 5) {
-      const password = prompt("Nhập mật khẩu admin:");
-
-      if (password === "admin123") {
-        setPage("backend");
-      } else {
-        alert("Sai mật khẩu!");
-      }
-
-      setClickCount(0);
-    }
-  }}
-  style={{ cursor: "pointer" }}
->
-  {siteInfo.name}
-</h1>
-          <p>{siteInfo.welcome}</p>
-        </div>
-      </header>
-      
-      {!currentUser ? (
-  authPage === "login" ? (
-    <LoginPage
-      onLogin={handleLogin}
-      onGoRegister={() => setAuthPage("register")}
-    />
-  ) : (
-    <RegisterPage
-      onRegister={handleRegister}
-      onGoLogin={() => setAuthPage("login")}
-    />
-  )
-      ) : page === "frontend" ? (
+  <Routes>
+    <Route
+      path="/"
+      element={
         <Frontend
           foods={foods}
           services={services}
@@ -110,18 +74,30 @@ const handleLogin = (phone, password) => {
           setFoods={setFoods}
           setServices={setServices}
         />
-      ) : (
-        <Backend
-          foods={foods}
-          services={services}
-          orders={orders}
-          setOrders={setOrders}
-          setFoods={setFoods}
-          setServices={setServices}
-          siteInfo={siteInfo}
-          setSiteInfo={setSiteInfo}
-        />
-      )}
-    </div>
-  );
+      }
+    />
+
+    <Route
+  path="/admin"
+  element={
+    localStorage.getItem("admin-auth") === "true" ? (
+      <Backend
+        foods={foods}
+        services={services}
+        orders={orders}
+        setOrders={setOrders}
+        setFoods={setFoods}
+        setServices={setServices}
+        siteInfo={siteInfo}
+        setSiteInfo={setSiteInfo}
+      />
+    ) : (
+      <Navigate to="/admin-login" />
+    )
+  }
+/>
+    <Route path="/admin-login" element={<AdminLogin />} />
+    <Route path="*" element={<Navigate to="/" />} />
+  </Routes>
+);
 }
