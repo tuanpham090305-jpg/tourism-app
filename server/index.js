@@ -8,11 +8,27 @@ const QRCode = require("qrcode");
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: { origin: "*" },
-});
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tourism-app-khzp.vercel.app",
+  "https://tourism-app-eta.vercel.app",
+];
 
-app.use(cors());
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  },
+});
 app.use(express.json());
 
 const db = new sqlite3.Database("./tourism.db");
